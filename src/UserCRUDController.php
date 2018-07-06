@@ -141,7 +141,6 @@ class UserCRUDController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store() {
-        dd($this->isCreatable);
         if (!$this->isCreatable) {
             abort(404);
         }
