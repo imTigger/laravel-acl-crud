@@ -1,0 +1,32 @@
+{
+    "name": "imtigger/laravel-acl-crud",
+    "description": "Laravel ACL CRUD Controller",
+    "license": "mit",
+    "authors": [
+        {
+            "name": "Tiger",
+            "email": "tiger@tiger-workshop.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "laravel/framework": "^5.5",
+        "yajra/laravel-datatables-oracle": ">=8.0",
+        "kris/laravel-form-builder": "^1.7",
+        "santigarcor/laratrust": ">=4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Imtigger\\LaravelACLCRUD\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Imtigger\\LaravelACLCRUD\\LaravelACLCRUDServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
