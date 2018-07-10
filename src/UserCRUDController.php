@@ -28,8 +28,6 @@ class UserCRUDController extends CRUDController
 
     protected $isDeletable = true;
 
-
-
     /**
      * Trigger when store method
      * Override this method to add additinal operations
