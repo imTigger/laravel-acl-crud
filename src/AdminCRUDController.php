@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Role;
 use Illuminate\Routing\Controller;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
 use Input;
@@ -50,6 +51,8 @@ class AdminCRUDController extends CRUDController
      * @return Model
      */
     protected function storeSave() {
+        Input::merge(['password' => Hash::make(Input::get('password'))]);
+
         $entity = parent::storeSave();
 
         $entity->roles()->sync(Input::get('roles', array()));
@@ -65,7 +68,13 @@ class AdminCRUDController extends CRUDController
      * @return Model $entity
      */
     protected function updateSave($entity) {
-        $entity = parent::updateSave();
+        if (Input::get('password')) {
+            Input::merge(['password' => Hash::make(Input::get('password'))]);
+        } else {
+            Input::replace(Input::except(['password']));
+        }
+
+        $entity = parent::updateSave($entity);
 
         $entity->roles()->sync(Input::get('roles', array()));
 
