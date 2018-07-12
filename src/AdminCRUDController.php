@@ -56,6 +56,7 @@ class AdminCRUDController extends CRUDController
         $entity = parent::storeSave();
 
         $entity->roles()->sync(Input::get('roles', array()));
+        $entity->permissions()->sync(Input::get('permissions', array()));
 
         return $entity;
     }
@@ -77,6 +78,7 @@ class AdminCRUDController extends CRUDController
         $entity = parent::updateSave($entity);
 
         $entity->roles()->sync(Input::get('roles', array()));
+        $entity->permissions()->sync(Input::get('permissions', array()));
 
         return $entity;
     }
