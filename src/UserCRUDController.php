@@ -22,7 +22,6 @@ class UserCRUDController extends CRUDController
     protected $entityName = 'backend.entity.user';
     protected $entityClass = User::class;
     protected $formClass = UserForm::class;
-    protected $permissionPrefix = 'user';
     protected $with = [];
     protected $rawColumns = ['actions'];
 

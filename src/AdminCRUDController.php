@@ -20,7 +20,6 @@ class AdminCRUDController extends CRUDController
     protected $viewPrefix = 'admin.admin';
     protected $routePrefix = 'admin.admin';
     protected $entityName = 'backend.entity.admin';
-    protected $permissionPrefix = 'user';
     protected $entityClass = Admin::class;
     protected $formClass = AdminForm::class;
     protected $with = ['roles'];
