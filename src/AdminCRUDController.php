@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Role;
 use Illuminate\Routing\Controller;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
@@ -25,6 +26,12 @@ class AdminCRUDController extends CRUDController
     protected $with = ['roles'];
 
     public $isDeletable = true;
+
+    public static function routes($prefix, $controller, $as)
+    {
+        parent::routes($prefix, $controller, $as);
+        \Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
+    }
 
     public function index() {
         $builder = Role::query();
@@ -82,6 +89,10 @@ class AdminCRUDController extends CRUDController
         return $entity;
     }
 
+    public function switchUser($id) {
+
+    }
+
     /**
      * Construct Datatable object
      *
@@ -104,5 +115,10 @@ class AdminCRUDController extends CRUDController
         });
 
         return $datatable;
+    }
+
+    protected function ajaxListActions($item)
+    {
+        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="btn btn-xs btn-warning"><i class="fa fa-users"></i> ' . trans('laravel-acl-crud::ui.button.switch_user') . '</a> ' : '');
     }
 }
