@@ -17,7 +17,7 @@ class LaravelACLCRUDServiceProvider extends ServiceProvider
 
     public function boot()
     {
-    
+        $this->loadTranslationsFrom(__DIR__.'/resources/lang', 'laravel-acl-crud');
     }
 
 }

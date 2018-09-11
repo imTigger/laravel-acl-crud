@@ -89,8 +89,20 @@ class AdminCRUDController extends CRUDController
         return $entity;
     }
 
+    /**
+     * Switch user, login as another user
+     *
+     * @param integer $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
     public function switchUser($id) {
+        if (!Auth::user()->hasPermission('su')) {
+            abort(403);
+        }
 
+        Auth::login(($this->entityClass)::whereId($id)->firstOrFail());
+
+        return redirect('/');
     }
 
     /**
@@ -117,6 +129,12 @@ class AdminCRUDController extends CRUDController
         return $datatable;
     }
 
+    /**
+     * Extra DataTables action field, append string after default actions
+     *
+     * @param $item
+     * @return string
+     */
     protected function ajaxListActions($item)
     {
         return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="btn btn-xs btn-warning"><i class="fa fa-users"></i> ' . trans('laravel-acl-crud::ui.button.switch_user') . '</a> ' : '');

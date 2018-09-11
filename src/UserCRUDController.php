@@ -5,6 +5,7 @@ namespace Imtigger\LaravelACLCRUD;
 use App\Forms\UserForm;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Routing\Controller;
@@ -26,6 +27,12 @@ class UserCRUDController extends CRUDController
     protected $rawColumns = ['actions'];
 
     protected $isDeletable = true;
+
+    public static function routes($prefix, $controller, $as)
+    {
+        parent::routes($prefix, $controller, $as);
+        \Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
+    }
 
     /**
      * Trigger when store method
@@ -58,5 +65,32 @@ class UserCRUDController extends CRUDController
         $entity = parent::updateSave($entity);
 
         return $entity;
+    }
+
+    /**
+     * Switch user, login as another user
+     *
+     * @param integer $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function switchUser($id) {
+        if (!Auth::user()->hasPermission('su')) {
+            abort(403);
+        }
+
+        Auth::login(($this->entityClass)::whereId($id)->firstOrFail());
+
+        return redirect('/');
+    }
+
+    /**
+     * Extra DataTables action field, append string after default actions
+     *
+     * @param $item
+     * @return string
+     */
+    protected function ajaxListActions($item)
+    {
+        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="btn btn-xs btn-warning"><i class="fa fa-users"></i> ' . trans('laravel-acl-crud::ui.button.switch_user') . '</a> ' : '');
     }
 }
