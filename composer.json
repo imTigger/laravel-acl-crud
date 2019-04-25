@@ -14,7 +14,7 @@
         "yajra/laravel-datatables-oracle": ">=8.0",
         "kris/laravel-form-builder": "^1.7",
         "santigarcor/laratrust": ">=4.0",
-        "imtigger/laravel-crud": "^0.5||^0.6||dev-master"
+        "imtigger/laravel-crud": ">=0.5||dev-master"
     },
     "autoload": {
         "psr-4": {
