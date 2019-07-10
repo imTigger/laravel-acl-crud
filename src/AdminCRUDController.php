@@ -9,10 +9,10 @@ use Illuminate\Routing\Controller;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Input;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
-use Input;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
 
 class AdminCRUDController extends CRUDController
 {
@@ -60,9 +60,12 @@ class AdminCRUDController extends CRUDController
         Input::merge(['password' => Hash::make(Input::get('password'))]);
 
         $entity = parent::storeSave();
+        
+        $submittedRoles = collect(Input::get('roles', []));
+        $submittedPermissions = collect(Input::get('permissions', []));
 
-        $entity->roles()->sync(Input::get('roles', array()));
-        $entity->permissions()->sync(Input::get('permissions', array()));
+        $entity->roles()->sync($submittedRoles);
+        $entity->permissions()->sync($submittedPermissions);
 
         return $entity;
     }
@@ -80,11 +83,20 @@ class AdminCRUDController extends CRUDController
         } else {
             Input::replace(Input::except(['password']));
         }
-
+        
+        $submittedRoles = collect(Input::get('roles', []));
+        $submittedPermissions = collect(Input::get('permissions', []));
+        
+        // If current user don't have current permission, protect it from removing
+        $oldPermissions = $entity->permissions->pluck('id');
+        $myPermissions = Auth::user()->allPermissions()->pluck('id');
+        $maskedPermissions = $oldPermissions->diff($myPermissions);
+        $finalPermissions = $submittedPermissions->merge($maskedPermissions);
+        
         $entity = parent::updateSave($entity);
 
-        $entity->roles()->sync(Input::get('roles', array()));
-        $entity->permissions()->sync(Input::get('permissions', array()));
+        $entity->roles()->sync($submittedRoles);
+        $entity->permissions()->sync($finalPermissions);
 
         return $entity;
     }
