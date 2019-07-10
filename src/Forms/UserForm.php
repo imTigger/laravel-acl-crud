@@ -2,8 +2,6 @@
 
 namespace Imtigger\LaravelACLCRUD\Form;
 
-use App\Models\Client;
-use App\Models\Shop;
 use Kris\LaravelFormBuilder\Form;
 
 class UserForm extends Form
