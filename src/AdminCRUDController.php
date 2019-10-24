@@ -21,6 +21,8 @@ class AdminCRUDController extends CRUDController
     protected $entityClass = \App\Models\Admin::class;
     protected $formClass = \App\Forms\AdminForm::class;
     protected $with = ['roles'];
+    protected $guard = 'admin';
+    protected $suRedirect = '/admin';
 
     public $isDeletable = true;
 
@@ -109,9 +111,9 @@ class AdminCRUDController extends CRUDController
             abort(403);
         }
 
-        Auth::login(($this->entityClass)::whereId($id)->firstOrFail());
+        Auth::guard($this->guard)->login(($this->entityClass)::whereId($id)->firstOrFail());
 
-        return redirect('/');
+        return redirect($this->suRedirect);
     }
 
     /**

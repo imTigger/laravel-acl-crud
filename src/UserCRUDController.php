@@ -21,6 +21,8 @@ class UserCRUDController extends CRUDController
     protected $formClass = \App\Forms\UserForm::class;
     protected $with = [];
     protected $rawColumns = ['actions'];
+    protected $guard = 'web';
+    protected $suRedirect = '/user';
 
     protected $isDeletable = true;
 
@@ -74,9 +76,9 @@ class UserCRUDController extends CRUDController
             abort(403);
         }
 
-        Auth::login(($this->entityClass)::whereId($id)->firstOrFail());
+        Auth::guard($this->guard)->login(($this->entityClass)::whereId($id)->firstOrFail());
 
-        return redirect('/');
+        return redirect($this->suRedirect);
     }
 
     /**
