@@ -2,17 +2,13 @@
 
 namespace Imtigger\LaravelACLCRUD;
 
-use App\Forms\UserForm;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Route;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
-use Input;
-use DataTables;
 
 class UserCRUDController extends CRUDController
 {
@@ -21,8 +17,8 @@ class UserCRUDController extends CRUDController
     protected $viewPrefix = 'admin.user';
     protected $routePrefix = 'admin.user';
     protected $entityName = 'backend.entity.user';
-    protected $entityClass = User::class;
-    protected $formClass = UserForm::class;
+    protected $entityClass = \App\Models\User::class;
+    protected $formClass = \App\Forms\UserForm::class;
     protected $with = [];
     protected $rawColumns = ['actions'];
 
@@ -31,7 +27,7 @@ class UserCRUDController extends CRUDController
     public static function routes($prefix, $controller, $as)
     {
         parent::routes($prefix, $controller, $as);
-        \Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
+        Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
     }
 
     /**

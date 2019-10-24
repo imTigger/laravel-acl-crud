@@ -2,17 +2,13 @@
 
 namespace Imtigger\LaravelACLCRUD;
 
-use App\Forms\AdminForm;
-use App\Models\Admin;
-use App\Models\Role;
-use Illuminate\Routing\Controller;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Route;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
-use Yajra\DataTables\Facades\DataTables;
 
 class AdminCRUDController extends CRUDController
 {
@@ -21,8 +17,9 @@ class AdminCRUDController extends CRUDController
     protected $viewPrefix = 'admin.admin';
     protected $routePrefix = 'admin.admin';
     protected $entityName = 'backend.entity.admin';
-    protected $entityClass = Admin::class;
-    protected $formClass = AdminForm::class;
+    protected $roleClass = \App\Models\Role::class;
+    protected $entityClass = \App\Models\Admin::class;
+    protected $formClass = \App\Forms\AdminForm::class;
     protected $with = ['roles'];
 
     public $isDeletable = true;
@@ -30,11 +27,11 @@ class AdminCRUDController extends CRUDController
     public static function routes($prefix, $controller, $as)
     {
         parent::routes($prefix, $controller, $as);
-        \Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
+        Route::get("{$prefix}/su/{id}", ['as' => "{$as}.su", 'uses' => "{$controller}@switchUser"]);
     }
 
     public function index() {
-        $builder = Role::query();
+        $builder = ($this->roleClass)::query();
         if (!empty($this->rolesShowOnly)) {
             $builder->whereIn('roles.name', $this->rolesShowOnly);
         }
