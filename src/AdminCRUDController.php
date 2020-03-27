@@ -25,6 +25,11 @@ class AdminCRUDController extends CRUDController
     protected $guard = 'admin';
     protected $suRedirect = '/admin';
 
+    protected $suButtonIconClass = 'fa fa-users';
+    protected $suButtonClass = 'btn btn-xs btn-warning';
+    protected $suButtonTitle = 'laravel-acl-crud::ui.button.switch_user';
+    protected $suButtonText = 'laravel-acl-crud::ui.button.switch_user';
+
     public $isDeletable = true;
 
     public static function routes($prefix, $controller, $as)
@@ -183,6 +188,6 @@ class AdminCRUDController extends CRUDController
      */
     protected function ajaxListActions($item)
     {
-        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="btn btn-xs btn-warning"><i class="fa fa-users"></i> ' . trans('laravel-acl-crud::ui.button.switch_user') . '</a> ' : '');
+        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a title="' . trans($this->suButtonTitle) . '" href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="' . $this->suButtonClass . '"><i class="' . trans($this->suButtonIconClass) . '"></i> ' . trans($this->suButtonText) . '</a> ' : '');
     }
 }
