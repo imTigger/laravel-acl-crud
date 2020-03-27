@@ -137,9 +137,12 @@ class AdminCRUDController extends CRUDController
      */
     protected function processRole($entity = null)
     {
+        $submittedRoles = collect(Request::input('roles', []));
+        
+        if (Auth::user()->hasRole('root')) return $submittedRoles;
+        
         // Removed submitted roles that current user do not have
         $myRoles = Auth::user()->roles->pluck('id');
-        $submittedRoles = collect(Request::input('roles', []));
         $filteredRoles = $submittedRoles->intersect($myRoles);
 
         if ($entity === null) return $filteredRoles;
@@ -153,10 +156,13 @@ class AdminCRUDController extends CRUDController
     }
 
     protected function processPermission($entity = null)
-    {
+    {        
+        $submittedPermissions = collect(Request::input('permissions', []));
+        
+        if (Auth::user()->hasRole('root')) return $submittedPermissions;
+        
         // Removed submitted permissions that current user do not have
         $myPermissions = Auth::user()->allPermissions()->pluck('id');
-        $submittedPermissions = collect(Request::input('permissions', []));
         $filteredPermissions = $submittedPermissions->intersect($myPermissions);
 
         if ($entity === null) return $filteredPermissions;

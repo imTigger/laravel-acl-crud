@@ -36,7 +36,7 @@ class RoleForm extends Form
             'expanded' => false,
             'multiple' => true,
             'rules' => [],
-            'option_attributes' => Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
+            'option_attributes' => Auth::user()->hasRole('root') ? [] : Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
         ]);
     }
 }

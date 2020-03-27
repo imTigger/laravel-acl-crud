@@ -43,10 +43,13 @@ class RoleCRUDController extends CRUDController
     }
 
     protected function processPermission($entity = null)
-    {
+    {        
+        $submittedPermissions = collect(Request::input('permissions', []));
+        
+        if (Auth::user()->hasRole('root')) return $submittedPermissions;
+        
         // Removed submitted permissions that current user do not have
         $myPermissions = Auth::user()->allPermissions()->pluck('id');
-        $submittedPermissions = collect(Request::input('permissions', []));
         $filteredPermissions = $submittedPermissions->intersect($myPermissions);
 
         if ($entity === null) return $filteredPermissions;
