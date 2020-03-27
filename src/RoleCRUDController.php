@@ -3,7 +3,8 @@ namespace Imtigger\LaravelACLCRUD;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 use Imtigger\LaravelCRUD\CRUDController;
 
 class RoleCRUDController extends CRUDController
