@@ -30,13 +30,7 @@ class AdminForm extends Form
             'rules' => [],
             'class' => Role::class,
             'multiple' => true,
-            'query_builder' => function ($query) {
-                // Non-root user can only select it's own roles
-                $user = Auth::user();
-                if ($user->hasRole('root')) return $query;
-
-                return $query->whereIn('id', $user->roles->pluck('id'));
-            }
+            'option_attributes' => Role::whereNotIn('id', Auth::user()->roles->pluck('id'))->get()->keyBy('id')->map(function ($role) { return ['disabled']; })->toArray(),
         ]);
 
         $this->add('permissions', 'entity', [
@@ -50,13 +44,7 @@ class AdminForm extends Form
             'class' => Permission::class,
             'property' => 'display_name',
             'multiple' => true,
-            'query_builder' => function ($query) {
-                // Non-root user can only select it's own permissions
-                $user = Auth::user();
-                if ($user->hasRole('root')) return $query;
-
-                return $query->whereIn('id', $user->allPermissions()->pluck('id'));
-            },
+            'option_attributes' => Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
         ]);
 
         // Don't show password on view/delete page

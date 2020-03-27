@@ -2,6 +2,7 @@
 
 namespace Imtigger\LaravelACLCRUD\Form;
 
+use App\Models\Permission;
 use Kris\LaravelFormBuilder\Form;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,7 +12,6 @@ class RoleForm extends Form
     {
         $this->method = $this->getMethod();
         $this->entity = $this->getModel();
-
 
         $this->add('name', 'text', [
             'label' => trans('laravel-acl-crud::ui.label.name'),
@@ -31,18 +31,12 @@ class RoleForm extends Form
 
         $this->add('permissions', 'entity', [
             'label' => trans('laravel-acl-crud::ui.label.permissions'),
-            'class' => \App\Models\Permission::class,
+            'class' => Permission::class,
             'property' => 'display_name',
             'expanded' => false,
             'multiple' => true,
             'rules' => [],
-            'query_builder' => function ($query) {
-                // Non-root user can only select it's own permissions
-                $user = Auth::user();
-                if ($user->hasRole('root')) return $query;
-
-                return $query->whereIn('id', $user->allPermissions()->pluck('id'));
-            },
+            'option_attributes' => Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
         ]);
     }
 }
