@@ -3,6 +3,7 @@
 namespace Imtigger\LaravelACLCRUD\Form;
 
 use Kris\LaravelFormBuilder\Form;
+use Illuminate\Support\Facades\Auth;
 
 class RoleForm extends Form
 {
@@ -34,7 +35,14 @@ class RoleForm extends Form
             'property' => 'display_name',
             'expanded' => false,
             'multiple' => true,
-            'rules' => []
+            'rules' => [],
+            'query_builder' => function ($query) {
+                // Non-root user can only select it's own permissions
+                $user = Auth::user();
+                if ($user->hasRole('root')) return $query;
+
+                return $query->whereIn('id', $user->allPermissions()->pluck('id'));
+            },
         ]);
     }
 }

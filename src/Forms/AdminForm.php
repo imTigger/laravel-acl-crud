@@ -31,9 +31,11 @@ class AdminForm extends Form
             'class' => Role::class,
             'multiple' => true,
             'query_builder' => function ($query) {
-                // Hide roles that user don't have
-                $hiddenRoles = collect(Admin::$protectedRoles)->diff(Auth::user()->roles->pluck('name'));
-                return $query->whereNotIn('name', $hiddenRoles);
+                // Non-root user can only select it's own roles
+                $user = Auth::user();
+                if ($user->hasRole('root')) return $query;
+
+                return $query->whereIn('id', $user->roles->pluck('id'));
             }
         ]);
 
@@ -49,8 +51,11 @@ class AdminForm extends Form
             'property' => 'display_name',
             'multiple' => true,
             'query_builder' => function ($query) {
-                // User can only select it's own permissions
-                return $query->whereIn('name', Auth::user()->allPermissions()->pluck('name'));
+                // Non-root user can only select it's own permissions
+                $user = Auth::user();
+                if ($user->hasRole('root')) return $query;
+
+                return $query->whereIn('id', $user->allPermissions()->pluck('id'));
             },
         ]);
 

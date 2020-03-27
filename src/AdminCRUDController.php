@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
@@ -56,15 +57,12 @@ class AdminCRUDController extends CRUDController
      * @return Model
      */
     protected function storeSave() {
-        Input::merge(['password' => Hash::make(Input::get('password'))]);
+        Request::merge(['password' => Hash::make(Request::input('password'))]);
 
         $entity = parent::storeSave();
-        
-        $submittedRoles = collect(Input::get('roles', []));
-        $submittedPermissions = collect(Input::get('permissions', []));
 
-        $entity->roles()->sync($submittedRoles);
-        $entity->permissions()->sync($submittedPermissions);
+        $entity->roles()->sync($this->processRole($entity));
+        $entity->permissions()->sync($this->processPermission($entity));
 
         return $entity;
     }
@@ -77,25 +75,16 @@ class AdminCRUDController extends CRUDController
      * @return Model $entity
      */
     protected function updateSave($entity) {
-        if (Input::get('password')) {
-            Input::merge(['password' => Hash::make(Input::get('password'))]);
+        if (Request::input('password')) {
+            Request::merge(['password' => Hash::make(Request::input('password'))]);
         } else {
-            Input::replace(Input::except(['password']));
+            Request::replace(Request::except(['password']));
         }
-        
-        $submittedRoles = collect(Input::get('roles', []));
-        $submittedPermissions = collect(Input::get('permissions', []));
-        
-        // If current user don't have current permission, protect it from removing
-        $oldPermissions = $entity->permissions->pluck('id');
-        $myPermissions = Auth::user()->allPermissions()->pluck('id');
-        $maskedPermissions = $oldPermissions->diff($myPermissions);
-        $finalPermissions = $submittedPermissions->merge($maskedPermissions);
-        
+
         $entity = parent::updateSave($entity);
 
-        $entity->roles()->sync($submittedRoles);
-        $entity->permissions()->sync($finalPermissions);
+        $entity->roles()->sync($this->processRole($entity));
+        $entity->permissions()->sync($this->processPermission($entity));
 
         return $entity;
     }
@@ -138,6 +127,46 @@ class AdminCRUDController extends CRUDController
         });
 
         return $datatable;
+    }
+
+    /**
+     *
+     *
+     * @param null $entity
+     * @return \Illuminate\Support\Collection
+     */
+    protected function processRole($entity = null)
+    {
+        // Removed submitted roles that current user do not have
+        $myRoles = Auth::user()->roles->pluck('id');
+        $submittedRoles = collect(Request::input('roles', []));
+        $filteredRoles = $submittedRoles->intersect($myRoles);
+
+        if ($entity === null) return $filteredRoles;
+
+        // If current user don't have current permission, protect it so it's persist after save
+        $oldRoles = $entity->roles->pluck('id');
+        $maskedRoles = $oldRoles->diff($myRoles); // Old permissions current user don't have
+        $finalRoles = $filteredRoles->merge($maskedRoles);
+
+        return $finalRoles;
+    }
+
+    protected function processPermission($entity = null)
+    {
+        // Removed submitted permissions that current user do not have
+        $myPermissions = Auth::user()->allPermissions()->pluck('id');
+        $submittedPermissions = collect(Request::input('permissions', []));
+        $filteredPermissions = $submittedPermissions->intersect($myPermissions);
+
+        if ($entity === null) return $filteredPermissions;
+
+        // If current user don't have current permission, protect it so it's persist after save
+        $oldPermissions = $entity->permissions->pluck('id');
+        $maskedPermissions = $oldPermissions->diff($myPermissions); // Old permissions current user don't have
+        $finalPermissions = $filteredPermissions->merge($maskedPermissions);
+
+        return $finalPermissions;
     }
 
     /**
