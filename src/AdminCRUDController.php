@@ -66,8 +66,8 @@ class AdminCRUDController extends CRUDController
 
         $entity = parent::storeSave();
 
-        $entity->roles()->sync($this->processRole($entity));
-        $entity->permissions()->sync($this->processPermission($entity));
+        $entity->syncRoles(AclHelper::processRole(Request::input('roles', []), $entity));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }
@@ -88,8 +88,8 @@ class AdminCRUDController extends CRUDController
 
         $entity = parent::updateSave($entity);
 
-        $entity->roles()->sync($this->processRole($entity));
-        $entity->permissions()->sync($this->processPermission($entity));
+        $entity->syncRoles(AclHelper::processRole(Request::input('roles', []), $entity));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }
@@ -132,52 +132,6 @@ class AdminCRUDController extends CRUDController
         });
 
         return $datatable;
-    }
-
-    /**
-     *
-     *
-     * @param null $entity
-     * @return \Illuminate\Support\Collection
-     */
-    protected function processRole($entity = null)
-    {
-        $submittedRoles = collect(Request::input('roles', []));
-        
-        if (Auth::user()->hasRole('root')) return $submittedRoles;
-        
-        // Removed submitted roles that current user do not have
-        $myRoles = Auth::user()->roles->pluck('id');
-        $filteredRoles = $submittedRoles->intersect($myRoles);
-
-        if ($entity === null) return $filteredRoles;
-
-        // If current user don't have current permission, protect it so it's persist after save
-        $oldRoles = $entity->roles->pluck('id');
-        $maskedRoles = $oldRoles->diff($myRoles); // Old permissions current user don't have
-        $finalRoles = $filteredRoles->merge($maskedRoles);
-
-        return $finalRoles;
-    }
-
-    protected function processPermission($entity = null)
-    {        
-        $submittedPermissions = collect(Request::input('permissions', []));
-        
-        if (Auth::user()->hasRole('root')) return $submittedPermissions;
-        
-        // Removed submitted permissions that current user do not have
-        $myPermissions = Auth::user()->allPermissions()->pluck('id');
-        $filteredPermissions = $submittedPermissions->intersect($myPermissions);
-
-        if ($entity === null) return $filteredPermissions;
-
-        // If current user don't have current permission, protect it so it's persist after save
-        $oldPermissions = $entity->permissions->pluck('id');
-        $maskedPermissions = $oldPermissions->diff($myPermissions); // Old permissions current user don't have
-        $finalPermissions = $filteredPermissions->merge($maskedPermissions);
-
-        return $finalPermissions;
     }
 
     /**

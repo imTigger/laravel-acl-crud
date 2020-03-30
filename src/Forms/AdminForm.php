@@ -5,6 +5,7 @@ namespace Imtigger\LaravelACLCRUD\Form;
 use App\Models\Admin;
 use App\Models\Permission;
 use App\Models\Role;
+use Imtigger\LaravelACLCRUD\AclHelper;
 use Illuminate\Support\Facades\Auth;
 use Kris\LaravelFormBuilder\Form;
 
@@ -30,7 +31,9 @@ class AdminForm extends Form
             'rules' => [],
             'class' => Role::class,
             'multiple' => true,
-            'option_attributes' => Auth::user()->hasRole('root') ? [] : Role::whereNotIn('id', Auth::user()->roles->pluck('id'))->get()->keyBy('id')->map(function ($role) { return ['disabled']; })->toArray(),
+            'option_attributes' => Role::get()->reject(function ($role, $key) {
+                return AclHelper::hasAllPermissionsOfRole(Auth::user()->allPermissions()->pluck('id'), $role);
+            })->keyBy('id')->map(function ($role) { return ['disabled']; })->toArray(),
         ]);
 
         $this->add('permissions', 'entity', [
@@ -44,7 +47,7 @@ class AdminForm extends Form
             'class' => Permission::class,
             'property' => 'display_name',
             'multiple' => true,
-            'option_attributes' => Auth::user()->hasRole('root') ? [] : Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
+            'option_attributes' => Permission::whereNotIn('id', Auth::user()->allPermissions()->pluck('id'))->get()->keyBy('id')->map(function ($permission) { return ['disabled']; })->toArray()
         ]);
 
         // Don't show password on view/delete page
