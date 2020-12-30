@@ -3,7 +3,8 @@ namespace Imtigger\LaravelACLCRUD;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 use Imtigger\LaravelCRUD\CRUDController;
 
 class RoleCRUDController extends CRUDController
@@ -23,7 +24,7 @@ class RoleCRUDController extends CRUDController
     protected function storeSave() {
         $entity = parent::storeSave();
 
-        $entity->syncPermissions(Arr::flatten(Input::get('permissions', array())));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }
@@ -36,7 +37,7 @@ class RoleCRUDController extends CRUDController
      * @return Model $entity
      */
     protected function updateSave($entity) {
-        $entity->syncPermissions(Arr::flatten(Input::get('permissions', array())));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }

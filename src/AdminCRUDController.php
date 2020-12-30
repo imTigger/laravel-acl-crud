@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Imtigger\LaravelCRUD\CRUDController;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
@@ -25,6 +26,13 @@ class AdminCRUDController extends CRUDController
     protected $suRedirect = '/admin';
 
     protected $isDeletable = true;
+
+    protected $suButtonIconClass = 'fa fa-users';
+    protected $suButtonClass = 'btn btn-xs btn-warning';
+    protected $suButtonTitle = 'laravel-acl-crud::ui.button.switch_user';
+    protected $suButtonText = 'laravel-acl-crud::ui.button.switch_user';
+
+    public $isDeletable = true;
 
     public static function routes($prefix, $controller, $as)
     {
@@ -56,15 +64,12 @@ class AdminCRUDController extends CRUDController
      * @return Model
      */
     protected function storeSave() {
-        Input::merge(['password' => Hash::make(Input::get('password'))]);
+        Request::merge(['password' => Hash::make(Request::input('password'))]);
 
         $entity = parent::storeSave();
-        
-        $submittedRoles = collect(Input::get('roles', []));
-        $submittedPermissions = collect(Input::get('permissions', []));
 
-        $entity->roles()->sync($submittedRoles);
-        $entity->permissions()->sync($submittedPermissions);
+        $entity->syncRoles(AclHelper::processRole(Request::input('roles', []), $entity));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }
@@ -77,25 +82,16 @@ class AdminCRUDController extends CRUDController
      * @return Model $entity
      */
     protected function updateSave($entity) {
-        if (Input::get('password')) {
-            Input::merge(['password' => Hash::make(Input::get('password'))]);
+        if (Request::input('password')) {
+            Request::merge(['password' => Hash::make(Request::input('password'))]);
         } else {
-            Input::replace(Input::except(['password']));
+            Request::replace(Request::except(['password']));
         }
-        
-        $submittedRoles = collect(Input::get('roles', []));
-        $submittedPermissions = collect(Input::get('permissions', []));
-        
-        // If current user don't have current permission, protect it from removing
-        $oldPermissions = $entity->permissions->pluck('id');
-        $myPermissions = Auth::user()->allPermissions()->pluck('id');
-        $maskedPermissions = $oldPermissions->diff($myPermissions);
-        $finalPermissions = $submittedPermissions->merge($maskedPermissions);
-        
+
         $entity = parent::updateSave($entity);
 
-        $entity->roles()->sync($submittedRoles);
-        $entity->permissions()->sync($finalPermissions);
+        $entity->syncRoles(AclHelper::processRole(Request::input('roles', []), $entity));
+        $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
     }
@@ -148,6 +144,6 @@ class AdminCRUDController extends CRUDController
      */
     protected function ajaxListActions($item)
     {
-        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="btn btn-xs btn-warning"><i class="fa fa-users"></i> ' . trans('laravel-acl-crud::ui.button.switch_user') . '</a> ' : '');
+        return parent::ajaxListActions($item) . (Auth::user()->hasPermission('su') ? '<a title="' . trans($this->suButtonTitle) . '" href="' . route("{$this->routePrefix}.su", [$item->id]) .'" class="' . $this->suButtonClass . '"><i class="' . trans($this->suButtonIconClass) . '"></i> ' . trans($this->suButtonText) . '</a> ' : '');
     }
 }
