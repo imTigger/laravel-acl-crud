@@ -32,8 +32,6 @@ class AdminCRUDController extends CRUDController
     protected $suButtonTitle = 'laravel-acl-crud::ui.button.switch_user';
     protected $suButtonText = 'laravel-acl-crud::ui.button.switch_user';
 
-    public $isDeletable = true;
-
     public static function routes($prefix, $controller, $as)
     {
         parent::routes($prefix, $controller, $as);
