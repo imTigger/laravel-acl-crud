@@ -37,6 +37,8 @@ class RoleCRUDController extends CRUDController
      * @return Model $entity
      */
     protected function updateSave($entity) {
+        $entity = parent::updateSave($entity);
+      
         $entity->syncPermissions(AclHelper::processPermission(Request::input('permissions', []), $entity));
 
         return $entity;
