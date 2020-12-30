@@ -24,7 +24,7 @@ class AdminCRUDController extends CRUDController
     protected $guard = 'admin';
     protected $suRedirect = '/admin';
 
-    public $isDeletable = true;
+    protected $isDeletable = true;
 
     public static function routes($prefix, $controller, $as)
     {
